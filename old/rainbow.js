@@ -1,7 +1,4 @@
 $(function(){
-  var cnvsSize = 600;
-  $("#cnvs").width(cnvsSize);
-  $("#cnvs").height(cnvsSize);
   var PI = Math.PI;
   var sqrt = Math.sqrt;
   var sin = Math.sin;
@@ -100,10 +97,10 @@ $(function(){
       this.p3 = new Point(0,0);
       this.pf = new Point(0,0);
 
-//      this.b = new Ball(400/1000*cnvsSize ,400/1000*cnvsSize,200/1000*cnvsSize);
-      this.b1 = new Ball(this.p1.x,this.p1.y,1);
-      this.b2 = new Ball(this.p2.x,this.p2.y,1);
-      this.b3 = new Ball(this.p3.x,this.p3.y,1);
+      this.b = new Ball(400,400,200);
+      this.b1 = new Ball(this.p1.x,this.p1.y,2);
+      this.b2 = new Ball(this.p2.x,this.p2.y,2);
+      this.b3 = new Ball(this.p3.x,this.p3.y,2);
 
       this.line0_1 = new Line(this.p0,this.p1);
       this.line1_2 = new Line(this.p1,this.p2);
@@ -112,9 +109,9 @@ $(function(){
 
       this.allObjects = [];
 
-      //this.allObjects.push(this.b1);
-      //this.allObjects.push(this.b2);
-      //this.allObjects.push(this.b3);
+      this.allObjects.push(this.b1);
+      this.allObjects.push(this.b2);
+      this.allObjects.push(this.b3);
       this.allObjects.push(this.line0_1);
       this.allObjects.push(this.line1_2);
       this.allObjects.push(this.line2_3);
@@ -122,10 +119,8 @@ $(function(){
     }
 
     update(mouse){
-      //this.p1 = mouse.sub(b.center).normedVector().multiply(b.size).add(b.center);
-      //this.p0 = new Point(0,this.p1.y);
-	  this.p0 = new Point(0, mouse.y);
-	  this.p1 = new Point(b.center.x - sqrt(b.size*b.size - (this.p0.y-b.center.y)*(this.p0.y-b.center.y)), mouse.y);
+      this.p1 = mouse.sub(b.center).normedVector().multiply(b.size).add(b.center);
+      this.p0 = new Point(0,this.p1.y);
       this.b1.center = this.p1;
       var inAng = incidentAngle(this.p1,b.center);
       // console.log(p1);
@@ -139,7 +134,7 @@ $(function(){
       this.b3.center = rel3.add(b.center);
 
       var outAng = ang3 + inAng - PI;
-      this.pf = this.b3.center.add(Point.createFromPolar(cnvsSize,outAng));
+      this.pf = this.b3.center.add(Point.createFromPolar(1000,outAng));
 
       this.line0_1.setPoints(this.p0,this.p1);
       this.line1_2.setPoints(this.p1,this.b2.center);
@@ -162,25 +157,18 @@ $(function(){
 
 
   var mouse;
-  var w = cnvsSize;
-  var h = cnvsSize;
+  var w = 1000;
+  var h = 1000;
   var cnvs = $("#cnvs")[0];
   var ctx = cnvs.getContext("2d");
 
-  
+  ctx.globalAlpha = 0.01;
+
   var allObjects = [];
 
-
-//var b = new Ball(400,400,200);
-  var b = new Ball(400/600*cnvsSize ,300/600*cnvsSize,150/600*cnvsSize);
-  console.log(cnvsSize + " cnv");
+  var b = new Ball(400,400,200);
   allObjects.push(b);
 
-  
-  ctx.globalAlpha = 1.0;
-  b.draw(ctx); 
-  ctx.globalAlpha = 0.03;
-  
   var rays = [];
   rays.push(new Ray(1.34451,"#d400ff"));
   rays.push(new Ray(1.34235,"#5000ff"));
@@ -216,29 +204,13 @@ $(function(){
   function refractionAngle(inAng,n){
     return asin(sin(inAng-PI)/n);
   }
-  
-  function ClearDraw(ctx){
-		ctx.clearRect(0, 0, w, h);
-		ctx.globalAlpha = 1.0;
-		b.draw(ctx);
-		ctx.globalAlpha = 0.03;
-	}
 
-  $("#clear_btn").click(()=>{
-	  ClearDraw(ctx);
-  });
   var counter = 0;
   $("#cnvs").mousemove(e=>{
     counter++;
     if(counter%3!=0) return;
-
-    var parentOffset = $("#cnvs").offset(); 
-    var relX = e.pageX - parentOffset.left;
-    var relY = e.pageY - parentOffset.top;
-    mouse = new Point(relX, relY);
-	console.log(relX, relY);
-    if(mouse.x > b.center.x);
-	if(mouse.y < b.center.y - b.size || mouse.y > b.center.y + b.size)return;
+    mouse = new Point(e.pageX,e.pageY);
+    if(mouse.x < b.center.x);
 
     for(let ray of rays){
       ray.update(mouse);
